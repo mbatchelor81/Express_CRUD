@@ -20,7 +20,7 @@ sudo systemctl start postgresql
 DB_PASS=$(openssl rand -base64 12)
 sudo -u postgres psql -c "CREATE USER crud_user WITH PASSWORD '$DB_PASS';"
 sudo -u postgres psql -c "CREATE DATABASE crud_express OWNER crud_user;"
-sudo -u postgres psql -d crud_express -f init.sql
+PGPASSWORD=$DB_PASS psql -U crud_user -h localhost -d crud_express -f init.sql
 ```
 
 ## Running the App
