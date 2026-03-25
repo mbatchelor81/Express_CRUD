@@ -5,7 +5,7 @@
 - MySQL server running locally (`sudo systemctl start mysql`)
 - Node.js installed (v18+)
 - `crud_express` database and `users` table created
-- `.env` file with `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_TYPE` configured
+- `.env` file with `DB_HOST`, `DB_USER`, `DB_PASS` configured
 
 ## Devin Secrets Needed
 
@@ -54,5 +54,4 @@ Expected: 7 tests pass (GET /, GET /add, GET /frontend, POST /save, GET /edit/:i
 
 - **MySQL auth errors**: If you see `ER_ACCESS_DENIED_ERROR`, the user might be using `caching_sha2_password`. Fix with: `ALTER USER 'crud_user'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';`
 - **Port 3000 in use**: Kill existing process: `kill $(ss -tlnp | grep 3000 | grep -oP 'pid=\K[0-9]+')`
-- **App supports both MySQL and PostgreSQL** via `DB_TYPE` env var (default: `mysql`)
 - **Tests require a running MySQL instance** with the `crud_express` database and `users` table
