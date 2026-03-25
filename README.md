@@ -32,7 +32,6 @@ Step 3: add these to app.js
 const path = require('path');
 const express = require('express');
 const ejs = require('ejs');
-const { Pool } = require('pg');
 const { maxHeaderSize } = require('http');
 const app = express();
 require('dotenv').config()
@@ -45,16 +44,16 @@ app.listen(3000, () => {
 
 Step 4: Create the database connection
 
-> To connect to PostgreSQL database, we use this pg package, remember to run `npm install pg`
+> To connect to PostgreSQL database, we use the pg package, remember to run `npm install pg`
 
 ```javascript
 const { Pool } = require('pg');
-const pgPool = new Pool({
+const pool = new Pool({
     host: process.env.PG_HOST,
     user: process.env.PG_USER,
     password: process.env.PG_PASS,
     port: process.env.PG_PORT || 5432,
-    database: 'crud_express'
+    database: process.env.PG_DATABASE || 'crud_express'
 });
 ```
 
@@ -117,16 +116,11 @@ Step 3: Edit the SQL connection -> look at `connecting to PostgreSQL`
 
 Step 4: `nodemon app`
 
-#### NOTICE
-> use the pg package for PostgreSQL
-```npm install pg```
-```const { Pool } = require('pg')```
-
 ### Connecting to PostgreSQL
-> We will be using PostgreSQL, first run this inside psql
+> We will be using PostgreSQL, first run this with psql or pgAdmin
 
 ```SQL
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
     email VARCHAR(256) NOT NULL,
@@ -141,28 +135,29 @@ CREATE TABLE IF NOT EXISTS users (
 - create a file called  `.env` and paste this in
 ```
 PG_HOST=localhost
-PG_USER=crud_user
-PG_PASS=your_password_here
+PG_USER= < your username >
+PG_PASS= < your password here without the '<>' >
 PG_PORT=5432
+PG_DATABASE=crud_express
 ```
 
-- create a new database in psql and call it 'crud_express'
+- create a new database in psql or pgAdmin and call it 'crud_express'
 
 
-> To connect to PostgreSQL database, we use this pg package, remember to run `npm install pg`
+> To connect to PostgreSQL database, we use the pg package, remember to run `npm install pg`
 
 ```javascript
 const { Pool } = require('pg');
-const pgPool = new Pool({
+const pool = new Pool({
     host: process.env.PG_HOST,
     user: process.env.PG_USER,
     password: process.env.PG_PASS,
     port: process.env.PG_PORT || 5432,
-    database: 'crud_express'
+    database: process.env.PG_DATABASE || 'crud_express'
 });
 ```
 
-success, if the pool connects, we can now use queries using `pgPool` const keyword
+success, if the console.log shows, it means that it is connected, we can now use queries using `pool` const keyword
 
 ### View set up
 
@@ -192,9 +187,8 @@ app.get('/add', (req, res) => {
 });
 
 app.post('/save', (req , res) => {
-    let params = [req.body.name, req.body.email, req.body.phone_no];
     let sql = "INSERT INTO users (name, email, phone_no) VALUES ($1, $2, $3)";
-    pgPool.query(sql, params, (err, results) => {
+    pool.query(sql, [req.body.name, req.body.email, req.body.phone_no], (err, results) => {
         if (err) throw err;
         res.redirect('/');
     });
@@ -226,9 +220,8 @@ steps:
 
 ```javascript
 app.post('/save', (req , res) => {
-    let params = [req.body.name, req.body.email, req.body.phone_no];
     let sql = "INSERT INTO users (name, email, phone_no) VALUES ($1, $2, $3)";
-    pgPool.query(sql, params, (err, results) => {
+    pool.query(sql, [req.body.name, req.body.email, req.body.phone_no], (err, results) => {
         if (err) throw err;
         res.redirect('/');
     });
@@ -236,8 +229,8 @@ app.post('/save', (req , res) => {
 ```
 
     now you can see, we have the req coming in from the front-end which we can grab using req.body.''
-    we use pgPool.query() 
-    which takes in the sql query line, the params it needs to fill in the $1, $2, $3 placeholders and also gives us back the error and result.
+    we use pool.query() 
+    which takes in the sql query line, the data it needs to fill in the $1, $2, $3 placeholders and also gives us back the error and result.
     from there we can respond with a redirect back to the original page. 
 
 
@@ -247,27 +240,21 @@ app.post('/save', (req , res) => {
 
 ```
 // app.get('/create', async(req, res) => {
-//     let sql = "INSERT INTO users VALUES (4, 'test', 'test@gmail.com', 123)";
-//     pgPool.query(sql, (err, rows) => {
+//     let sql = "INSERT INTO users (name, email, phone_no) VALUES ($1, $2, $3)";
+//     pool.query(sql, ['test', 'test@gmail.com', '123'], (err, result) => {
 //         if (err) throw err;
 //         res.render('user_index', {
 //             title : 'This is the user_index page',
-//             users : rows
+//             users : result.rows
 //         });
 //     });
 // });
 
 // app.post('/save', (req , res) => {
-//     let params;
 //     let sql = "INSERT INTO users (name, email, phone_no) VALUES ($1, $2, $3)";
-//     let query = "SELECT COUNT(id) AS max_id FROM users"
-//     pgPool.query(query, (err, rows) => {
+//     pool.query(sql, [req.body.name, req.body.email, req.body.phone_no], (err, results) => {
 //         if (err) throw err;
-//         params = [req.body.name, req.body.email, req.body.phone_no];
-//         pgPool.query(sql, params, (err, results) => {
-//             if (err) throw err;
-//             res.redirect('/');
-//         });
+//         res.redirect('/');
 //     });
 // });
 ```
