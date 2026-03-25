@@ -1,12 +1,12 @@
 # Express_CRUD
-This is a CRUD template for Node JS Express and MySQL Database. 
+This is a CRUD template for Node JS Express and PostgreSQL Database. 
 
 
 ![banner](https://user-images.githubusercontent.com/27864374/132133123-5b59f84a-a3e2-46f9-8111-08317c74a075.png)
 
 ## *Objective*
 * To create, update, read, delete records from a user table
-* To connect to MySQL database using mysql2 and stash the secrets in dotenv
+* To connect to PostgreSQL database using pg and stash the secrets in dotenv
 * To connect with a esj view and use the view folder
 * Use basic bootstrap for front-end
 
@@ -24,7 +24,7 @@ Step 1: install nodeJS into your system
 * change index.js to app.js
 
 Step 2: Install the packages
-`npm install --save express mysql ejs`
+`npm install --save express pg ejs`
 `npm install -g nodemon`
 
 Step 3: add these to app.js
@@ -32,7 +32,7 @@ Step 3: add these to app.js
 const path = require('path');
 const express = require('express');
 const ejs = require('ejs');
-const mysql = require('mysql2');
+const { Pool } = require('pg');
 const { maxHeaderSize } = require('http');
 const app = express();
 require('dotenv').config()
@@ -45,18 +45,16 @@ app.listen(3000, () => {
 
 Step 4: Create the database connection
 
-> To connect to mysql database, we use this mysql2 package, rememver to run `npm install mysql2`
+> To connect to PostgreSQL database, we use this pg package, remember to run `npm install pg`
 
 ```javascript
-const connection = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
+const { Pool } = require('pg');
+const pgPool = new Pool({
+    host: process.env.PG_HOST,
+    user: process.env.PG_USER,
+    password: process.env.PG_PASS,
+    port: process.env.PG_PORT || 5432,
     database: 'crud_express'
-});
-
-connection.connect(function(error) {
-    error ? console.log(error) : console.log('Database connected!');
 });
 ```
 
@@ -115,57 +113,56 @@ open in VSC code.
 
 Step 2: run `npm install`
 
-Step 3: Edit the SQL connection -> look at `connecting to MYSQL`
+Step 3: Edit the SQL connection -> look at `connecting to PostgreSQL`
 
 Step 4: `nodemon app`
 
 #### NOTICE
-> change the mysql to mysql2
-```npm install mysql2```
-```const mysql = require("mysql2")```
+> use the pg package for PostgreSQL
+```npm install pg```
+```const { Pool } = require('pg')```
 
-### Connecting to MYSQL
-> We will be using MySQL, first run this inside your mysql workbench
+### Connecting to PostgreSQL
+> We will be using PostgreSQL, first run this inside psql
 
 ```SQL
-CREATE TABLE users (
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
     email VARCHAR(256) NOT NULL,
     phone_no VARCHAR(26)
 );
 ```
 
-- After you install mySQL, you will need
+- After you install PostgreSQL, you will need
     1. user
     2. password
 
 - create a file called  `.env` and paste this in
 ```
-DB_HOST=localhost
-DB_USER= < your username, usually it's 'root' >
-DB_PASS= < your passsword here without the '<>' >
+PG_HOST=localhost
+PG_USER=crud_user
+PG_PASS=your_password_here
+PG_PORT=5432
 ```
 
-- create a new SCHEMA in your mysql workbench and call it 'crud_express'
+- create a new database in psql and call it 'crud_express'
 
 
-> To connect to mysql database, we use this mysql2 package, rememver to run `npm install mysql2`
+> To connect to PostgreSQL database, we use this pg package, remember to run `npm install pg`
 
 ```javascript
-const connection = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
+const { Pool } = require('pg');
+const pgPool = new Pool({
+    host: process.env.PG_HOST,
+    user: process.env.PG_USER,
+    password: process.env.PG_PASS,
+    port: process.env.PG_PORT || 5432,
     database: 'crud_express'
-});
-
-connection.connect(function(error) {
-    error ? console.log(error) : console.log('Database connected!');
 });
 ```
 
-success, if the console.log shows, it means that it is connected, we can now use queries using `connection` const keyword
+success, if the pool connects, we can now use queries using `pgPool` const keyword
 
 ### View set up
 
@@ -195,9 +192,9 @@ app.get('/add', (req, res) => {
 });
 
 app.post('/save', (req , res) => {
-    let data = {name: req.body.name, email: req.body.email, phone_no: req.body.phone_no};
-    let sql = "INSERT INTO users SET ?";
-    connection.query(sql, data, (err, results) => {
+    let params = [req.body.name, req.body.email, req.body.phone_no];
+    let sql = "INSERT INTO users (name, email, phone_no) VALUES ($1, $2, $3)";
+    pgPool.query(sql, params, (err, results) => {
         if (err) throw err;
         res.redirect('/');
     });
@@ -229,9 +226,9 @@ steps:
 
 ```javascript
 app.post('/save', (req , res) => {
-    let data = {name: req.body.name, email: req.body.email, phone_no: req.body.phone_no};
-    let sql = "INSERT INTO users SET ?";
-    connection.query(sql, data, (err, results) => {
+    let params = [req.body.name, req.body.email, req.body.phone_no];
+    let sql = "INSERT INTO users (name, email, phone_no) VALUES ($1, $2, $3)";
+    pgPool.query(sql, params, (err, results) => {
         if (err) throw err;
         res.redirect('/');
     });
@@ -239,8 +236,8 @@ app.post('/save', (req , res) => {
 ```
 
     now you can see, we have the req coming in from the front-end which we can grab using req.body.''
-    we use connection.query() 
-    which takes in the sql query line, the data it needs to fill in the ? placeholder and also gives us back the error and result.
+    we use pgPool.query() 
+    which takes in the sql query line, the params it needs to fill in the $1, $2, $3 placeholders and also gives us back the error and result.
     from there we can respond with a redirect back to the original page. 
 
 
@@ -251,7 +248,7 @@ app.post('/save', (req , res) => {
 ```
 // app.get('/create', async(req, res) => {
 //     let sql = "INSERT INTO users VALUES (4, 'test', 'test@gmail.com', 123)";
-//     connection.query(sql, (err, rows) => {
+//     pgPool.query(sql, (err, rows) => {
 //         if (err) throw err;
 //         res.render('user_index', {
 //             title : 'This is the user_index page',
@@ -261,13 +258,13 @@ app.post('/save', (req , res) => {
 // });
 
 // app.post('/save', (req , res) => {
-//     let data;
-//     let sql = "INSERT INTO users SET ?";
+//     let params;
+//     let sql = "INSERT INTO users (name, email, phone_no) VALUES ($1, $2, $3)";
 //     let query = "SELECT COUNT(id) AS max_id FROM users"
-//     connection.query(query, (err, rows) => {
+//     pgPool.query(query, (err, rows) => {
 //         if (err) throw err;
-//         data = {id: rows[0].max_id + 1, name: req.body.name, email: req.body.email, phone_no: req.body.phone_no};
-//         connection.query(sql, data, (err, results) => {
+//         params = [req.body.name, req.body.email, req.body.phone_no];
+//         pgPool.query(sql, params, (err, results) => {
 //             if (err) throw err;
 //             res.redirect('/');
 //         });
