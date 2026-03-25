@@ -1,27 +1,21 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const DB_TYPE = process.env.DB_TYPE || 'postgres';
+const pgPool = new Pool({
+    host: process.env.PG_HOST,
+    user: process.env.PG_USER,
+    password: process.env.PG_PASS,
+    port: process.env.PG_PORT || 5432,
+    database: 'crud_express'
+});
 
-let pgPool;
+pgPool.on('connect', () => {
+    console.log('PostgreSQL Database connected!');
+});
 
-if (DB_TYPE === 'postgres') {
-    pgPool = new Pool({
-        host: process.env.PG_HOST,
-        user: process.env.PG_USER,
-        password: process.env.PG_PASS,
-        port: process.env.PG_PORT,
-        database: 'crud_express'
-    });
-
-    pgPool.on('connect', () => {
-        console.log('PostgreSQL Database connected!');
-    });
-
-    pgPool.on('error', (err) => {
-        console.error('PostgreSQL connection error:', err);
-    });
-}
+pgPool.on('error', (err) => {
+    console.error('PostgreSQL connection error:', err);
+});
 
 function query(sql, params, callback) {
     if (typeof params === 'function') {
@@ -38,15 +32,10 @@ function query(sql, params, callback) {
 }
 
 function close(callback) {
-    if (pgPool) {
-        pgPool.end().then(() => callback()).catch(callback);
-    } else {
-        if (callback) callback();
-    }
+    pgPool.end().then(() => callback()).catch(callback);
 }
 
 module.exports = {
     query,
-    close,
-    DB_TYPE
+    close
 };
