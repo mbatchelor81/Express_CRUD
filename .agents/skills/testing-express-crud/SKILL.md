@@ -2,29 +2,26 @@
 
 ## Prerequisites
 
-- MySQL server running locally (`sudo systemctl start mysql`)
+- PostgreSQL server running locally (`sudo systemctl start postgresql`)
 - Node.js installed (v18+)
 - `crud_express` database and `users` table created
-- `.env` file with `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_TYPE` configured
+- `.env` file with `PG_HOST`, `PG_USER`, `PG_PASS`, `PG_PORT` configured
 
 ## Devin Secrets Needed
 
-No external secrets needed. Local MySQL credentials are generated during environment initialization and stored in `.env` and `$ENVRC`.
+No external secrets needed. Local PostgreSQL credentials are generated during environment initialization and stored in `.env` and `$ENVRC`.
 
 ## Database Setup
 
 If the database isn't already set up:
 
 ```bash
-sudo systemctl start mysql
+sudo systemctl start postgresql
 DB_PASS=$(openssl rand -base64 12)
-sudo mysql -e "CREATE USER IF NOT EXISTS 'crud_user'@'localhost' IDENTIFIED WITH mysql_native_password BY '$DB_PASS';"
-sudo mysql -e "CREATE DATABASE IF NOT EXISTS crud_express;"
-sudo mysql -e "GRANT ALL PRIVILEGES ON crud_express.* TO 'crud_user'@'localhost'; FLUSH PRIVILEGES;"
-sudo mysql crud_express -e "CREATE TABLE IF NOT EXISTS users (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(256) NOT NULL, email VARCHAR(256) NOT NULL, phone_no VARCHAR(26));"
+sudo -u postgres psql -c "CREATE USER crud_user WITH PASSWORD '$DB_PASS';"
+sudo -u postgres psql -c "CREATE DATABASE crud_express OWNER crud_user;"
+sudo -u postgres psql -d crud_express -f init.sql
 ```
-
-Note: Use `mysql_native_password` auth plugin — the default `caching_sha2_password` may cause `ER_ACCESS_DENIED_ERROR` with the mysql2 Node.js driver.
 
 ## Running the App
 
@@ -52,7 +49,7 @@ Expected: 7 tests pass (GET /, GET /add, GET /frontend, POST /save, GET /edit/:i
 
 ## Common Issues
 
-- **MySQL auth errors**: If you see `ER_ACCESS_DENIED_ERROR`, the user might be using `caching_sha2_password`. Fix with: `ALTER USER 'crud_user'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';`
+- **PostgreSQL auth errors**: If you see authentication failures, check `pg_hba.conf` to ensure `md5` or `scram-sha-256` auth is enabled for local connections.
 - **Port 3000 in use**: Kill existing process: `kill $(ss -tlnp | grep 3000 | grep -oP 'pid=\K[0-9]+')`
-- **App supports both MySQL and PostgreSQL** via `DB_TYPE` env var (default: `mysql`)
-- **Tests require a running MySQL instance** with the `crud_express` database and `users` table
+- **App uses PostgreSQL**
+- **Tests require a running PostgreSQL instance** with the `crud_express` database and `users` table
