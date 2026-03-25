@@ -5,7 +5,7 @@
 - PostgreSQL server running locally (`sudo systemctl start postgresql`)
 - Node.js installed (v18+)
 - `crud_express` database and `users` table created
-- `.env` file with `PG_HOST`, `PG_USER`, `PG_PASS`, `PG_PORT` configured
+- `.env` file with `PG_HOST`, `PG_USER`, `PG_PASS`, `PG_PORT`, `PG_DATABASE` configured
 
 ## Devin Secrets Needed
 
@@ -20,7 +20,7 @@ sudo systemctl start postgresql
 DB_PASS=$(openssl rand -base64 12)
 sudo -u postgres psql -c "CREATE USER crud_user WITH PASSWORD '$DB_PASS';"
 sudo -u postgres psql -c "CREATE DATABASE crud_express OWNER crud_user;"
-PGPASSWORD=$DB_PASS psql -U crud_user -h localhost -d crud_express -f init.sql
+PGPASSWORD=$DB_PASS psql -U crud_user -h localhost -d crud_express -c "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(256) NOT NULL, email VARCHAR(256) NOT NULL, phone_no VARCHAR(26));"
 ```
 
 ## Running the App
