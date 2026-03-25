@@ -53,18 +53,16 @@ app.post('/save', (req , res) => {
 });
 
 app.get('/delete/:userId', (req,res) => {
-    const userID = req.params.userId;
     let sql = 'DELETE FROM users WHERE id = $1';
-    db.query(sql, [userID], (err, result) => {
+    db.query(sql, [req.params.userId], (err, result) => {
         if (err) throw err;
         res.redirect('/');
     });
 });
 
 app.get('/edit/:userId', (req, res) => {
-    const userID = req.params.userId;
     let sql = 'SELECT * FROM users WHERE users.id = $1';
-    db.query(sql, [userID], (err, result) => {
+    db.query(sql, [req.params.userId], (err, result) => {
         if (err) throw err;
         console.log(result[0])
         res.render('user_edit', {
