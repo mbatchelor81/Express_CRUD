@@ -20,7 +20,7 @@ sudo systemctl start postgresql
 DB_PASS=$(openssl rand -base64 12)
 sudo -u postgres psql -c "CREATE USER crud_user WITH PASSWORD '$DB_PASS';"
 sudo -u postgres psql -c "CREATE DATABASE crud_express OWNER crud_user;"
-sudo -u postgres psql -d crud_express -c "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(256) NOT NULL, email VARCHAR(256) NOT NULL, phone_no VARCHAR(26));"
+PGPASSWORD=$DB_PASS psql -U crud_user -h localhost -d crud_express -c "CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(256) NOT NULL, email VARCHAR(256) NOT NULL, phone_no VARCHAR(26));"
 ```
 
 ## Running the App
@@ -49,6 +49,7 @@ Expected: 7 tests pass (GET /, GET /add, GET /frontend, POST /save, GET /edit/:i
 
 ## Common Issues
 
-- **PostgreSQL auth errors**: Ensure the user has the correct password and permissions. Check `pg_hba.conf` if you see authentication failures.
+- **PostgreSQL auth errors**: If you see authentication failures, check `pg_hba.conf` to ensure `md5` or `scram-sha-256` auth is enabled for local connections.
 - **Port 3000 in use**: Kill existing process: `kill $(ss -tlnp | grep 3000 | grep -oP 'pid=\K[0-9]+')`
+- **App uses PostgreSQL**
 - **Tests require a running PostgreSQL instance** with the `crud_express` database and `users` table
