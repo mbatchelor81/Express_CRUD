@@ -56,7 +56,18 @@ function query(sql, params, callback) {
     }
 }
 
+function close(callback) {
+    if (DB_TYPE === 'mysql' && mysqlConnection) {
+        mysqlConnection.end(callback);
+    } else if (DB_TYPE === 'postgres' && pgPool) {
+        pgPool.end().then(() => callback()).catch(callback);
+    } else {
+        if (callback) callback();
+    }
+}
+
 module.exports = {
     query,
+    close,
     DB_TYPE
 };
