@@ -44,28 +44,27 @@ app.get('/add', (req, res) => {
 });
 
 app.post('/save', (req , res) => {
-    let data = {name: req.body.name, email: req.body.email, phone_no: req.body.phone_no};
-    let sql = "INSERT INTO users SET ?";
-    db.query(sql, data, (err, results) => {
+    let sql = "INSERT INTO users (name, email, phone_no) VALUES ($1, $2, $3)";
+    let params = [req.body.name, req.body.email, req.body.phone_no];
+    db.query(sql, params, (err, results) => {
         if (err) throw err;
         res.redirect('/');
     });
 });
 
 app.get('/delete/:userId', (req,res) => {
-    const userID = req.params.userId;
-    let sql = `DELETE FROM users WHERE id = ${userID}`;
-    db.query(sql, (err, result) => {
+    let sql = 'DELETE FROM users WHERE id = $1';
+    let params = [req.params.userId];
+    db.query(sql, params, (err, result) => {
         if (err) throw err;
         res.redirect('/');
     });
 });
 
 app.get('/edit/:userId', (req, res) => {
-    const userID = req.params.userId;
-    let sql = `SELECT * FROM users
-               WHERE users.id = ${userID}`;
-    db.query(sql, (err, result) => {
+    let sql = 'SELECT * FROM users WHERE users.id = $1';
+    let params = [req.params.userId];
+    db.query(sql, params, (err, result) => {
         if (err) throw err;
         console.log(result[0])
         res.render('user_edit', {
@@ -76,10 +75,9 @@ app.get('/edit/:userId', (req, res) => {
 });
 
 app.post('/update', (req, res) => {
-    let data = {name: req.body.name, email: req.body.email, phone_no: req.body.phone_no}
-    let userId = req.body.id;
-    let sql = `UPDATE users SET ? WHERE users.id = ${userId}`
-    db.query(sql, data, (err, result) => {
+    let sql = 'UPDATE users SET name = $1, email = $2, phone_no = $3 WHERE id = $4';
+    let params = [req.body.name, req.body.email, req.body.phone_no, req.body.id];
+    db.query(sql, params, (err, result) => {
         if (err) throw err;
         res.redirect('/');
     })
