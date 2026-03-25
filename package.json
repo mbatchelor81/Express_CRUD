@@ -4,7 +4,7 @@
   "description": "this is to learn CRUD and views, routes in express",
   "main": "app.js",
   "scripts": {
-    "test": "jest --forceExit --detectOpenHandles",
+    "test": "jest --detectOpenHandles",
     "start": "node app.js"
   },
   "repository": {

@@ -3,17 +3,7 @@ const app = require('../app');
 const db = require('../db');
 
 afterAll((done) => {
-    // Clean up the database connection
-    if (db.DB_TYPE === 'mysql') {
-        // mysql2 connection has an end method
-        const mysql = require('mysql2');
-        // Access the underlying connection to close it
-        db.query('SELECT 1', (err) => {
-            done();
-        });
-    } else {
-        done();
-    }
+    db.close(done);
 });
 
 describe('GET /', () => {
