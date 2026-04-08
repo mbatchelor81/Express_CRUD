@@ -1,133 +1,79 @@
 # Express_CRUD
-This is a CRUD template for Node JS Express and MySQL Database. 
 
+A Node.js web application for performing Create, Read, Update, and Delete (CRUD) operations on a MySQL database using Express and EJS templates.
 
 ![banner](https://user-images.githubusercontent.com/27864374/132133123-5b59f84a-a3e2-46f9-8111-08317c74a075.png)
 
-## *Objective*
-* To create, update, read, delete records from a user table
-* To connect to MySQL database using mysql2 and stash the secrets in dotenv
-* To connect with a esj view and use the view folder
-* Use basic bootstrap for front-end
+## Tech Stack
 
-*next repo objective*
-* Use the node express-generator to create a template using router context.
-* Understand how to better seperate out app.js code using router.
-* Learn how to use partials for front end.
-* Understand the async await and when to use
+- **Runtime**: Node.js
+- **Framework**: [Express](https://expressjs.com/) v4.17
+- **Database**: MySQL via [mysql2](https://www.npmjs.com/package/mysql2) v2.3
+- **View Engine**: [EJS](https://ejs.co/) v3.1 (server-side rendered templates)
+- **Front-end**: Bootstrap 4
+- **Testing**: [Jest](https://jestjs.io/) v30 + [Supertest](https://www.npmjs.com/package/supertest) v7
+- **Environment**: [dotenv](https://www.npmjs.com/package/dotenv) for secrets management
 
-## How this was set up
-
-Step 1: install nodeJS into your system
-`node -v` to check
-`npm init`
-* change index.js to app.js
-
-Step 2: Install the packages
-`npm install --save express mysql ejs`
-`npm install -g nodemon`
-
-Step 3: add these to app.js
-```javascript
-const path = require('path');
-const express = require('express');
-const ejs = require('ejs');
-const mysql = require('mysql2');
-const { maxHeaderSize } = require('http');
-const app = express();
-require('dotenv').config()
-
-//listen to server
-app.listen(3000, () => {
-    console.log('server is running at port 3000');
-});
-```
-
-Step 4: Create the database connection
-
-> To connect to mysql database, we use this mysql2 package, rememver to run `npm install mysql2`
-
-```javascript
-const connection = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: 'crud_express'
-});
-
-connection.connect(function(error) {
-    error ? console.log(error) : console.log('Database connected!');
-});
-```
-
-Step 5: Define the index path '/' and the ejs view
-
-```javascript
-
-//this sets the views to be directed to the views folder, try removing the 's' from views and try it out
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-app.get('/', (req, res) => {
-	res.render('user_index', {
-	    title : 'This is the user_index page',
-	});
-});
+## Project Structure
 
 ```
-
-Create view folder within the app and add `user_index.ejs`
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Bootstrap 4 Example</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <link rel="stylesheet" href="public\stylesheets\styles.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</head>
-<body>
-
-<div class="container">
-	hello
-</div>
-</body>
-</html>
+Express_CRUD/
+├── app.js              # Express server, routes, and middleware
+├── db.js               # MySQL connection pool and query/close helpers
+├── package.json        # Dependencies and scripts
+├── .env                # Database credentials (not committed)
+├── views/
+│   ├── user_index.ejs  # Dashboard — lists all users in a table
+│   ├── user_add.ejs    # Form to create a new user
+│   ├── user_edit.ejs   # Form to edit an existing user
+│   └── frontend_page.ejs # Static front-end test page
+├── public/
+│   ├── css/styles.css  # Custom styles
+│   └── img/            # Static images
+└── __tests__/
+    └── app.test.js     # Integration tests for all routes
 ```
 
-Step 6: To run the application
-`npm start` or `nodemon app`
+## Routes
 
-## To run this locally on your computer...
+| Method | Path              | Description                          |
+|--------|-------------------|--------------------------------------|
+| GET    | `/`               | List all users from the `users` table |
+| GET    | `/add`            | Render the "Create User" form        |
+| POST   | `/save`           | Insert a new user, redirect to `/`   |
+| GET    | `/edit/:userId`   | Render the "Edit User" form          |
+| POST   | `/update`         | Update an existing user, redirect to `/` |
+| GET    | `/delete/:userId` | Delete a user by ID, redirect to `/` |
+| GET    | `/frontend`       | Static front-end test page           |
 
-Step 1: create a folder to store projects
+## Prerequisites
 
-ie: desktop -> projects folder
-`cd projects`
-`git clone https://github.com/kwokcheong/Express_CRUD.git`
+- **Node.js** (v14 or later recommended)
+- **MySQL** server running locally (or remotely)
 
-open in VSC code.
+## Getting Started
 
-Step 2: run `npm install`
+### 1. Clone the repository
 
-Step 3: Edit the SQL connection -> look at `connecting to MYSQL`
+```bash
+git clone https://github.com/mbatchelor81/Express_CRUD.git
+cd Express_CRUD
+```
 
-Step 4: `nodemon app`
+### 2. Install dependencies
 
-#### NOTICE
-> change the mysql to mysql2
-```npm install mysql2```
-```const mysql = require("mysql2")```
+```bash
+npm install
+```
 
-### Connecting to MYSQL
-> We will be using MySQL, first run this inside your mysql workbench
+### 3. Set up MySQL
 
-```SQL
+Create the database and table in your MySQL instance:
+
+```sql
+CREATE DATABASE IF NOT EXISTS crud_express;
+USE crud_express;
+
 CREATE TABLE users (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(256) NOT NULL,
@@ -136,141 +82,71 @@ CREATE TABLE users (
 );
 ```
 
-- After you install mySQL, you will need
-    1. user
-    2. password
+### 4. Configure environment variables
 
-- create a file called  `.env` and paste this in
+Create a `.env` file in the project root:
+
 ```
 DB_HOST=localhost
-DB_USER= < your username, usually it's 'root' >
-DB_PASS= < your passsword here without the '<>' >
+DB_USER=root
+DB_PASS=your_password_here
 ```
 
-- create a new SCHEMA in your mysql workbench and call it 'crud_express'
+### 5. Run the application
 
-
-> To connect to mysql database, we use this mysql2 package, rememver to run `npm install mysql2`
-
-```javascript
-const connection = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: 'crud_express'
-});
-
-connection.connect(function(error) {
-    error ? console.log(error) : console.log('Database connected!');
-});
+```bash
+npm start
 ```
 
-success, if the console.log shows, it means that it is connected, we can now use queries using `connection` const keyword
+The server starts at [http://localhost:3000](http://localhost:3000).
 
-### View set up
+For development with auto-restart:
 
-```
-//this sets the views to be directed to the views folder, try removing the 's' from views and try it out
-app.set('views', path.join(__dirname, 'views'));
-
-app.set('view engine', 'ejs');
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }))
+```bash
+npx nodemon app.js
 ```
 
-as you can see, express let's us have the freedom to choose which view engine to use. I have chosen ejs as it is pretty simple and great to use.
-this view engine let's use the data from our backend!
+## Database Module (`db.js`)
 
-create a folder called `view` and add your views in there
+The database layer is separated into `db.js`, which:
 
-## CRUD create read update delete
+- Creates a MySQL connection using credentials from `.env`
+- Exports a `query(sql, params, callback)` function used by all routes
+- Exports a `close(callback)` function for graceful shutdown (used in tests)
 
-*create*
+## Testing
 
-```javascript
-app.get('/add', (req, res) => {
-    res.render('user_add', {
-        title: 'This is the create user page',
-    });
-});
+Integration tests use Jest and Supertest to exercise every route:
 
-app.post('/save', (req , res) => {
-    let data = {name: req.body.name, email: req.body.email, phone_no: req.body.phone_no};
-    let sql = "INSERT INTO users SET ?";
-    connection.query(sql, data, (err, results) => {
-        if (err) throw err;
-        res.redirect('/');
-    });
-});
+```bash
+npm test
 ```
 
-steps: 
+This runs `jest --detectOpenHandles`, which tests:
 
-1. app.get('/add')
+- `GET /` — renders the user index page
+- `GET /add` — renders the add user form
+- `GET /frontend` — renders the static front-end page
+- `POST /save` — creates a user and redirects
+- `GET /edit/:userId` — renders the edit form for an existing user
+- `POST /update` — updates a user and redirects
+- `GET /delete/:userId` — deletes a user and redirects
 
-- This looks for the /add route. Hence within the button in the / route, the create button routes to /add, this triggers the app.get('add')
-- the app.get has 2 things
-    req -> request which allows us to grab data coming from the route
-    res -> the response we will be returing to user
+> **Note**: Tests require a running MySQL instance with the `crud_express` database and `users` table set up.
 
-    we will respond with a simple render to the form creation page called 'user_add'
+## How It Works
 
-2. Create view called 'user_add.ejs' under the view folder
-    ```html
-    <form action="/save" method="post">
-    ```
-    notice we created a form with an action "/save" method="post"
+### Architecture
 
-    so our backend will be getting this data from the front-end, directed to the "/save" action. 
+The application follows a simple MVC pattern:
 
-    So let's create a save action
+- **`app.js`** — Controller layer: defines all routes and middleware. Delegates database operations to `db.js` and renders EJS views.
+- **`db.js`** — Model layer: manages the MySQL connection and exposes `query` and `close` methods.
+- **`views/`** — View layer: EJS templates render HTML with data from the controller.
 
-3. Create `/save'
+### Key Patterns
 
-```javascript
-app.post('/save', (req , res) => {
-    let data = {name: req.body.name, email: req.body.email, phone_no: req.body.phone_no};
-    let sql = "INSERT INTO users SET ?";
-    connection.query(sql, data, (err, results) => {
-        if (err) throw err;
-        res.redirect('/');
-    });
-});
-```
-
-    now you can see, we have the req coming in from the front-end which we can grab using req.body.''
-    we use connection.query() 
-    which takes in the sql query line, the data it needs to fill in the ? placeholder and also gives us back the error and result.
-    from there we can respond with a redirect back to the original page. 
-
-
-
-
-#### placeholder code
-
-```
-// app.get('/create', async(req, res) => {
-//     let sql = "INSERT INTO users VALUES (4, 'test', 'test@gmail.com', 123)";
-//     connection.query(sql, (err, rows) => {
-//         if (err) throw err;
-//         res.render('user_index', {
-//             title : 'This is the user_index page',
-//             users : rows
-//         });
-//     });
-// });
-
-// app.post('/save', (req , res) => {
-//     let data;
-//     let sql = "INSERT INTO users SET ?";
-//     let query = "SELECT COUNT(id) AS max_id FROM users"
-//     connection.query(query, (err, rows) => {
-//         if (err) throw err;
-//         data = {id: rows[0].max_id + 1, name: req.body.name, email: req.body.email, phone_no: req.body.phone_no};
-//         connection.query(sql, data, (err, results) => {
-//             if (err) throw err;
-//             res.redirect('/');
-//         });
-//     });
-// });
-```
+- **Post-Redirect-Get (PRG)**: The `POST /save` and `POST /update` routes redirect to `/` after writing to the database, preventing duplicate form submissions.
+- **Static file serving**: The `public/` directory is served for CSS and images via `express.static`.
+- **URL-encoded body parsing**: `express.urlencoded({ extended: false })` parses form submissions.
+- **Modular exports**: `app.js` exports the Express app for testing. The server only listens when run directly (`require.main === module`).
