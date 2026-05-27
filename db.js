@@ -1,27 +1,37 @@
-const mysql = require('mysql2');
+const { Pool } = require('pg');
 require('dotenv').config();
 
-const mysqlConnection = mysql.createConnection({
+const pool = new Pool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
-    database: 'crud_express'
+    database: process.env.DB_NAME || 'crud_express',
+    port: process.env.DB_PORT || 5432,
 });
 
-mysqlConnection.connect(function(error) {
-    error ? console.log(error) : console.log('MySQL Database connected!');
+pool.connect((err, client, release) => {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log('PostgreSQL Database connected!');
+        release();
+    }
 });
 
 function query(sql, params, callback) {
-    mysqlConnection.query(sql, params, callback);
+    if (typeof params === 'function') {
+        callback = params;
+        params = [];
+    }
+    pool.query(sql, params, (err, result) => {
+        callback(err, result ? result.rows : null);
+    });
 }
 
 function close(callback) {
-    if (mysqlConnection) {
-        mysqlConnection.end(callback);
-    } else {
+    pool.end().then(() => {
         if (callback) callback();
-    }
+    }).catch(callback);
 }
 
 module.exports = {
